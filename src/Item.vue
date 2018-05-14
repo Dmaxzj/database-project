@@ -1,7 +1,6 @@
 <template>
-  <div class="item-container" @click="click_">
-      <img class="img" :src="path">
-      <p>ada</p>
+  <div class="item-container">
+      <b-img-lazy class="img" :src="path"></b-img-lazy>
       <div class="name">{{name}} </div>
   </div>
 </template>
@@ -10,13 +9,14 @@
 export default {
   name: 'item',
   props: ["path", "name"],
+  created: function () {
+   
+  },
   data () {
     return {}
   },
   methods: {
-    click_: function (argument) {
-      // this.$emit("clickhandler");
-    }
+    
   }
 }
 </script>
@@ -39,7 +39,6 @@ export default {
 
 .img {
   border-radius: 20px 20px 0px 0px;
-  /*object-fit: cover;*/
   width: 160px;
 }
 
@@ -50,11 +49,11 @@ export default {
   float: left;
   margin-left: 25px;
   margin-right: 25px;
+  margin-bottom: 25px;
   background-color: rgb(230,230,230);
   border-radius: 20px;
   box-shadow: 5px 5px 10px rgb(200, 200, 200);
   padding: 0px;
   overflow: hidden;
 }
-
 </style>
