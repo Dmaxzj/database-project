@@ -6,6 +6,7 @@ import Register from './Register.vue'
 import Login from './Login.vue'
 import UserInfo from './UserInfo.vue'
 import AddWork from './AddWork.vue'
+import ItemDetials from './ItemDetials.vue'
 
 Vue.use(VueRouter);
 
@@ -28,9 +29,34 @@ export default new VueRouter({
             path: '/addwork',
             component: AddWork
         },
+        {
+            path: '/userworks',
+            component: ItemContainer,
+            children: [{
+                path: ':id',
+                component: ItemDetials
+            }]
+        },
+        {
+            path: '/search',
+            component: ItemContainer,
+            children: [{
+                path: ':id',
+                component: ItemDetials
+            }]
+        },
+        {
+            path: '/works',
+            component: ItemContainer,
+            children: [{
+                path: ':id',
+                component: ItemDetials
+            }]
+        },
         {   
             path: '*',
-            component: ItemContainer
+            component: ItemContainer,
+            redirect: '/works'
         }
     ]
 

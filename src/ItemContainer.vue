@@ -1,13 +1,17 @@
 <template>
   <div id="item-container">
-     <item v-for="(item, index) in items" :key="index" @click.native="test(item.id, $event)" :path="item.path" :name="item.name"></item>
-     <item-detials v-if="detialsId" @closeDetialsHandler="closeDetials" :detialId="detialsId"/>
+     <item v-for="(item, index) in items" :key="index" @click.native="showDetials(item.id, item.name)" :path="item.path" :name="item.name"></item>
+     <!-- <b-modal id="item-detial-container" ref="itemDetails" hide-footer>
+      <item-detials v-if="detailsId" @closeDetialsHandler="closeDetials" :detailsId="detailsId"/>
+     </b-modal> -->
+     <router-view @closeDetialsHandler="closeDetials" :detailsId="detailsId"></router-view>
   </div>
 </template>
 
 <script>
 import Item from "./Item.vue"
 import ItemDetials from "./ItemDetials.vue"
+import Bus from "./Bus"
 
 export default {
   components: {
@@ -15,31 +19,38 @@ export default {
     ItemDetials,
   },
   name: 'item-container',
-  watch: {
-    '$route': 'fetchDataHandler'
-  },
   created: function () {
+    Bus.$on('selectData', this.routeHandler);
     this.fetchDataHandler();
   },
   data () {
     return {
-      detialsId: null,
+      detailsId: null,
+      detailsName: null,
       items: null
     }
   },
   methods: {
+    routeHandler: function(method) {
+      var lookUp = {
+      'userworks': this.fetchDataByUser,
+      'search': this.fetchDataBySearch
+      }
+      var def = this.fetchData;
+      var func = lookUp[method] || def;
+      func();
+    },
     fetchDataHandler: function() {
       var lookUp = {
       '/': this.fetchData,
-      '/userwork': this.fetchDataById,
+      '/userworks': this.fetchDataByUser,
       '/search': this.fetchDataBySearch
       }
-      if (lookUp[this.$route.path])
-        lookUp[this.$route.path]();
-      else
-        this.fetchData();
+      var def = this.fetchData;
+      var func = lookUp[this.$route.path] || def;
+      func();
     },
-    fetchDataById: function() {
+    fetchDataByUser: function() {
       var i = [];
       for (let index = 1; index < 5; index++) {
         i.push(
@@ -51,6 +62,15 @@ export default {
         )       
       }
       this.items = i;
+      // this.$http.get('/api/userworks').then(response => {
+      //   if (response.data.msg == 'success') {
+      //     this.items = response.data.userworks;
+      //   } else {
+      //     Bus.$emit('showErr', response.data.err);
+      //   }
+      // }, response => {
+      //   Bus.$emit('showErr', response);
+      // }) 
     },
     fetchDataBySearch: function() {
       var i = [];
@@ -64,14 +84,25 @@ export default {
         )       
       }
       this.items = i;
+      //  this.$http.get('/api/search?key=' + this.$route.query.key).then(response => {
+      //   if (response.data.msg == 'success') {
+      //     this.items = response.data.userworks;
+      //   } else {
+      //     Bus.$emit('showErr', response.data.err);
+      //   }
+      // }, response => {
+      //   Bus.$emit('showErr', response);
+      // }) 
     },
-    test: function (id, event) {
-      document.getElementsByTagName("body")[0].classList.add("disable");
-      this.detialsId = id;
+    showDetials: function (id, name) {
+      this.detailsId = id;
+      this.detailsName = name;
+      this.$router.push(this.$route.path + '/' + this.detailsId);
     },
     closeDetials: function() {
-      document.getElementsByTagName("body")[0].classList.remove("disable");
-      this.detialsId = null;
+      this.detailsId = null;
+      this.detailsName = null;
+      this.$router.back();
     },
     fetchData: function() {
       var i = [];
@@ -85,6 +116,15 @@ export default {
         )       
       }
       this.items = i;
+      //  this.$http.get('/api/works').then(response => {
+      //   if (response.data.msg == 'success') {
+      //     this.items = response.data.userworks;
+      //   } else {
+      //     Bus.$emit('showErr', response.data.err);
+      //   }
+      // }, response => {
+      //   Bus.$emit('showErr', response);
+      // }) 
     }
   }
 }
@@ -95,15 +135,15 @@ export default {
 body {
   margin: 0;
   padding: 0;
-}
 
-.disable {
-  opacity: 0.5;
 }
-
 
 
 body {
   background-color: rgb(255, 255, 255);
+}
+
+#item-detial-container > div {
+  max-width: 80%;
 }
 </style>

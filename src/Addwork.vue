@@ -65,7 +65,28 @@ export default {
     };
   },
   methods: {
-    addWork: function() {},
+    addWork: function() {
+      this.$http
+        .post("/api/addwork", {
+          title: this.work.title,
+          body: this.work.body,
+          image: this.work.image,
+          catagory: this.work.catagory,
+          episode: this.work.episode
+        })
+        .then(
+          response => {
+            if ((response.data.msg = "success")) {
+              this.$router.push("/userwork");
+            } else {
+              Bus.$emit("showErr", response.data.err);
+            }
+          },
+          response => {
+            Bus.$emit("showErr", response);
+          }
+        );
+    },
     cancle: function() {
       this.$router.back();
     }
@@ -74,5 +95,4 @@ export default {
 </script>
 
 <style type="text/css">
-
 </style>

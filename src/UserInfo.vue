@@ -26,14 +26,14 @@ export default {
                 email: "dengzijie395@gmail.com"
             }
 		}
+	},
+	created: function() {
+		// this.$http.get('/api/user').then(response => {
+		// 	this.user = response.data.user;
+		// }, response => {
+		// 	this.$router.back();
+		// })
 	}
-	// created: function() {
-	// 	this.$http.get('/api/user').then(response => {
-	// 		this.user = response.data.user;
-	// 	}, response => {
-	// 		this.$router.back();
-	// 	})
-	// }
 }
 
 </script>

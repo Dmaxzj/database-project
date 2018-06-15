@@ -65,23 +65,19 @@ export default {
 				this.err.vpassword = "两次密码不一样";
 				return;
 			}
-			this.$http.post('/regist', {
+			this.$http.post('api/regist', {
 				username: this.username,
 				password: this.password,
-				studentId: this.studentId,
-				phone: this.phone,
 				email: this.email
 			}).then(response => {
 				if (response.data.msg == 'success') {
-					Bus.$emit('login', this.username);
-					this.$router.push('/user');
-				} else if (response.data.msg.err) {
-					Bus.$emit('showErr', response.data.msg.err)
-				} else {					
-					this.err = response.data.msg;
-				}
+					Bus.$emit('loginSuccess', this.username);
+					this.$router.push('api/user');
+				} else if (response.data.err) {
+					Bus.$emit('showErr', response.data.err)
+				} 
 			}, response => {
-				this.$router.back();
+				Bus.$emit("showErr", response);
 			})
 		},
 		reset() {

@@ -10,7 +10,7 @@ export default {
   name: 'item',
   props: ["path", "name"],
   created: function () {
-   
+
   },
   data () {
     return {}

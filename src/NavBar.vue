@@ -10,18 +10,18 @@
     <b-navbar-nav class="ml-auto">
 
       <b-nav-form>
-        <b-form-input size="sm" class="mr-sm-3" type="text" placeholder="Search"/>
-        <b-button size="sm" class="my-2 my-sm-2" type="submit" form="??">Search</b-button>
+        <b-form-input size="sm" class="mr-sm-3" type="text" placeholder="搜索" v-model="searchKey"/>
+        <b-button size="sm" class="my-2 my-sm-2" type="submit" form="??" @click="searchByKey">搜索</b-button>
       </b-nav-form>
 
-      <b-nav-item to="/">
+      <b-nav-item to="/" @click="toHome">
         主页
       </b-nav-item>
     <b-navbar-nav right v-if="isLogin">
       <b-nav-item to="/addWork">
         新建
       </b-nav-item>
-      <b-nav-item to="/userwork">
+      <b-nav-item to="/userworks" @click="toUserworks">
         收藏
       </b-nav-item>
       <b-nav-item-dropdown>
@@ -51,25 +51,47 @@
 </template>
 
 <script>
-import Bus from './Bus'
+import Bus from "./Bus";
 
 export default {
   name: "my-nav-bar",
   created: function() {
-    Bus.$on("loginSuccess", (userName) => {
+    Bus.$on("loginSuccess", userName => {
       this.userName = userName;
       this.isLogin = true;
-    })
+    });
   },
   data() {
     return {
       isLogin: false,
-      userName: null
+      userName: null,
+      searchKey: ''
     };
   },
   methods: {
     signOut: function() {
-      this.isLogin = false;
+      this.$http.post("/signout").then(
+        respones => {
+          this.isLogin = false;
+          this.userName = null;
+          this.$router.push("/works");
+        },
+        respones => {
+          this.$router.push("/works");
+        }
+      );
+    },
+    searchByKey: function() {
+      if (this.searchKey !== '') {
+        this.$router.push('/search?key=' + this.searchKey);
+        Bus.$emit('selectData', 'search');
+      }
+    },
+    toHome: function() {
+      Bus.$emit('selectData', 'home');
+    },
+    toUserworks: function() {
+      Bus.$emit('selectData', 'userworks');
     }
   }
 };

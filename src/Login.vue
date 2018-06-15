@@ -41,21 +41,21 @@ export default {
   methods: {
     login() {
       // this.err = {};
-      // this.$http.post('/login', {
+      // this.$http.post('api/login', {
       // 	username: this.username,
       // 	password: this.password
       // }).then(response => {
       // 	if (response.data.msg == 'success') {
       // 		this.$router.push('/user');
-      // 		Bus.$emit('login', this.username);
+      // 		Bus.$emit('loginSuccess', this.username);
       // 	} else {
-      // 		Bus.$emit('showErr', response.data.msg);
+      // 		Bus.$emit('showErr', response.data.err);
       // 	}
       // }, response => {
-      // 	this.$router.push('/');
+      // 	Bus.$emit("showErr", response);
       // })
       Bus.$emit("loginSuccess", "Jay");
-      this.$router.push('/user')
+      this.$router.push("/user");
     },
     toRegist() {
       this.$router.push("/register");
@@ -65,5 +65,4 @@ export default {
 </script>
 
 <style type="text/css">
-
 </style>

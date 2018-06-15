@@ -39,10 +39,6 @@ body {
   padding: 0;
 }
 
-.disable {
-  opacity: 0.5;
-}
-
 
 body {
   background-color: rgb(255, 255, 255);
