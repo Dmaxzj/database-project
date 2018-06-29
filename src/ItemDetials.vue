@@ -1,6 +1,7 @@
 <template>
   <div class="item-detials-container">
-    <b-container  class="content-container">
+    <div class="wrap">
+    <b-container v-if="!isEditing" class="content-container">
       <b-row>
         <b-col md="4">
           <b-img :src="path"/>
@@ -9,7 +10,7 @@
           <b-container>
             <b-row>
               <b-col md="4">
-                <p>{{workInfo.title}}</p>
+                <p>{{workInfo.name}} </p>
               </b-col>
             </b-row>
             <b-row>
@@ -20,7 +21,7 @@
                 <p>集数: {{workInfo.episode}}</p>
               </b-col>
             </b-row>           
-            <b-row v-if="isLogin">
+            <!-- <b-row v-if="isLogin">
               <b-col>
                 <b-button v-if="privateInfo.isFavorite" @click="changeFavorite">取消收藏</b-button>
                 <b-button v-else @click="changeFavorite">收藏</b-button>
@@ -42,81 +43,91 @@
                   </b-input-group-addon>
                 </b-input-group>
               </b-col>
-            </b-row>
+            </b-row> -->
           </b-container>
         </b-col>
       </b-row>
       <b-row>
         <b-col md="12" style="text-align: left">
-          <p>{{workInfo.body}} </p>
+          <article class="work-description">{{workInfo.description}} </article>
         </b-col>
       </b-row>
     </b-container>
+    <b-container v-else  class="content-container">
+    <b-form>
+      <b-form-group label="标题："
+                    label-text-align="left">
+        <b-form-input type="text"
+                       v-model="editWork.name"
+                      maxlength="40"
+                      required>
+        </b-form-input>
+      </b-form-group>
+      <b-form-group label="介绍："
+                    label-text-align="left">
+        <b-form-textarea  type="text"
+                          v-model="editWork.description"
+                          :rows="4"
+                          :max-rows="4"
+                          required
+                          style="resize: none">
+        </b-form-textarea>
+      </b-form-group>
+      <div id="select-picture">
+        选择图片
+        <b-form-file v-model="picture" :state="Boolean(picture)" accept="image/*"></b-form-file>
+      </div>
+      <b-form-group label="集数："
+                    label-text-align="left">
+        <b-form-input  type="number"
+                          v-model="editWork.episode"
+                          required>
+        </b-form-input>
+      </b-form-group>		
+    </b-form>
+
+    </b-container>
+      <div id="bottom-nav-bar" v-if="isLogin">
+        <b-button v-if="!isEditing" @click="onEditingClick">编辑</b-button>
+        <b-button v-else @click="onEditingClick">取消</b-button>
+        <b-button>查看</b-button>
+        <b-button>评论</b-button>
+      </div>
+    </div>
+    <!-- <comments-container></comments-container> -->
     <div id="full-screen" @click="onClose" @scroll="scrollDetials"></div>
   </div>
 </template>
 
 <script>
 import CommentsContainer from "./CommentsContainer.vue";
-import Bus from "./Bus.js"
+import Bus from "./Bus.js";
 export default {
   name: "item-detials",
-  props: ["detialsId"],
   components: {
     CommentsContainer
   },
   data() {
     return {
       path: null,
+      isEditing: false,
       workInfo: {
         id: "",
-        title: "legal high",
-        body:
-          "lllegal highasdasdasdasdasdasdvevrvvdcadcasasca\
-        cacacascascascascascascascascascascacacascascascascascasc\
-        ascascascascacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascas\
-        cacacascascascascascascascascascascascascascasca",
-        image: "",
+        name: "legal high",
+        description:
+          "dasdasdasdasasdasdasdasasdasd\
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasdasdddddddddddddddddddddddddddsdasdasdasdsdasdasdasdasddadasdasasdasdasasdasdasdasdasdasdasdasdasdasdasdasdasd asdasasdasdas",
         catagory: "legal",
         episode: 12
       },
@@ -130,7 +141,27 @@ export default {
         { value: "BAD", text: "糟糕" },
         { value: "AVERAGE", text: "一般" },
         { value: "GOOD", text: "很棒" }
-      ]
+      ],
+      picture: null,
+      editWork: {
+        name: "legal high",
+        description:
+          "dasdasdasdasasdasdasdasasdasd\
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+        asdasdasdasdasdddddddddddddddddddddddddddsdasdasdasdsdasdasdasdasddadasdasasdasdasasdasdasdasdasdasdasdasdasdasdasdasdasd asdasasdasdas",
+        catagory: "legal",
+        episode: 12
+      }
     };
   },
   created: function() {
@@ -145,17 +176,19 @@ export default {
   mounted: function() {
     // 实现平滑滚动效果
     $("#full-screen").on("mousewheel", function(event) {
+      $(".content-container").stop();
       $(".content-container").animate(
         {
           scrollTop:
             $(".content-container").scrollTop() + event.originalEvent.deltaY
         },
-        30
+        150,
+        'linear'
       );
     });
   },
   methods: {
-    fetchData: function() { 
+    fetchData: function() {
       this.path = "/public/images/logo.png";
       let id = this.$route.fullPath.split("/");
       id = id[id.length - 1];
@@ -241,6 +274,12 @@ export default {
             Bus.$emit("showErr", response);
           }
         );
+    },
+    onEditingClick: function() {
+      this.isEditing = !this.isEditing;
+      this.editWork.name = this.workInfo.name;
+      this.editWork.description = this.workInfo.description;
+      this.editWork.episode = this.workInfo.episode;
     }
   },
   computed: {
@@ -261,6 +300,11 @@ export default {
   text-align: left;
 }
 
+.work-description {
+  word-wrap: break-word;
+  word-break: normal;
+}
+
 #full-screen {
   position: fixed;
   top: 0;
@@ -274,16 +318,38 @@ export default {
 }
 .content-container {
   position: relative;
-  max-width: 800px;
-  margin-top: 5%;
   width: 100%;
-  height: 60%;
-  background-color: antiquewhite;
-  overflow: auto;
-  z-index: 1050;
+  height: 90%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .content-container::-webkit-scrollbar {
-  width: 2px
+  width: 5px;
+}
+
+.content-container::-webkit-scrollbar-track {
+  background-color: #dae4e5;
+} /* 滚动条的滑轨背景颜色 */
+.content-container::-webkit-scrollbar-thumb {
+  background-color: #5e5e5e;
+  border-radius: 2px;
+}
+.wrap {
+  position: relative;
+  width: 800px;
+  height: 60%;
+  margin: auto;
+  margin-top: 5%;
+  z-index: 1050;
+  border-radius: 5px;
+  background-color: white;
+}
+
+#bottom-nav-bar {
+}
+
+#select-picture  {
+  overflow:auto;
 }
 </style>
