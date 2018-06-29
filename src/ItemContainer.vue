@@ -1,9 +1,6 @@
 <template>
-  <div id="item-container">
+  <div id="item-container" ref="itemContainer">
      <item v-for="(item, index) in items" :key="index" @click.native="showDetials(item.id, item.name)" :path="item.path" :name="item.name"></item>
-     <!-- <b-modal id="item-detial-container" ref="itemDetails" hide-footer>
-      <item-detials v-if="detailsId" @closeDetialsHandler="closeDetials" :detailsId="detailsId"/>
-     </b-modal> -->
      <router-view @closeDetialsHandler="closeDetials" :detailsId="detailsId"></router-view>
   </div>
 </template>
@@ -21,65 +18,54 @@ export default {
   name: 'item-container',
   created: function () {
     Bus.$on('selectData', this.routeHandler);
-    this.fetchDataHandler();
+    this.routeHandler(this.$route.path.split('/')[1]);
   },
   data () {
     return {
       detailsId: null,
-      detailsName: null,
       items: null
     }
   },
   methods: {
     routeHandler: function(method) {
-      var lookUp = {
-      'userworks': this.fetchDataByUser,
+      const lookUp = {
+      'likes': this.fetchDataByUser,
       'search': this.fetchDataBySearch
       }
-      var def = this.fetchData;
-      var func = lookUp[method] || def;
-      func();
-    },
-    fetchDataHandler: function() {
-      var lookUp = {
-      '/': this.fetchData,
-      '/userworks': this.fetchDataByUser,
-      '/search': this.fetchDataBySearch
-      }
-      var def = this.fetchData;
-      var func = lookUp[this.$route.path] || def;
+      const def = this.fetchData;
+      const func = lookUp[method] || def;
       func();
     },
     fetchDataByUser: function() {
-      var i = [];
+      let i = [];
       for (let index = 1; index < 5; index++) {
         i.push(
           {
             id: index,
             name: "aad",
-            path: "./src/assets/1.jpg"
+            path: "/public/images/1.jpg"
           }
         )       
       }
       this.items = i;
-      // this.$http.get('/api/userworks').then(response => {
-      //   if (response.data.msg == 'success') {
-      //     this.items = response.data.userworks;
-      //   } else {
-      //     Bus.$emit('showErr', response.data.err);
-      //   }
-      // }, response => {
-      //   Bus.$emit('showErr', response);
-      // }) 
+      this.$http.get('/api/likes').then(response => {
+        if (response.data.status === true) {
+          this.items = response.data.data.userworks;
+        } else {
+          Bus.$emit('showErr', response.data.errorMessages);
+        }
+      }, response => {
+        Bus.$emit('showErr', response.data.errorMessages);
+      }) 
     },
     fetchDataBySearch: function() {
-      var i = [];
+      let i = [];
       for (let index = 1; index < 5; index++) {
         i.push(
           {
             id: index,
             name: "aad",
-            path: "./src/assets/1.jpg"
+            path: "/public/images/1.jpg"
           }
         )       
       }
@@ -96,35 +82,33 @@ export default {
     },
     showDetials: function (id, name) {
       this.detailsId = id;
-      this.detailsName = name;
       this.$router.push(this.$route.path + '/' + this.detailsId);
     },
     closeDetials: function() {
       this.detailsId = null;
-      this.detailsName = null;
       this.$router.back();
     },
     fetchData: function() {
-      var i = [];
+      let i = [];
       for (let index = 1; index < 20; index++) {
         i.push(
           {
             id: index,
             name: "aad",
-            path: "./src/assets/logo.png"
+            path: "/public/images/logo.png"
           }
         )       
       }
       this.items = i;
-      //  this.$http.get('/api/works').then(response => {
-      //   if (response.data.msg == 'success') {
-      //     this.items = response.data.userworks;
-      //   } else {
-      //     Bus.$emit('showErr', response.data.err);
-      //   }
-      // }, response => {
-      //   Bus.$emit('showErr', response);
-      // }) 
+       this.$http.get('/api/works').then(response => {
+        if (response.data.status === true) {
+          this.items = response.data.data.works;
+        } else {
+          Bus.$emit('showErr', response.data.errorMessages);
+        }
+      }, error => {
+        Bus.$emit('showErr', error.response.errorMessages);
+      }) 
     }
   }
 }

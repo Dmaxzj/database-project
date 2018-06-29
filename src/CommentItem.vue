@@ -29,7 +29,7 @@ export default {
 	},
 	methods: {
 		submit: function() {
-			this.$http.put('/editComment/' + this.$route.params.id, {
+			this.$http.put('/Comments/' + this.$route.params.id, {
 				id: this._id,
 				newComment: this.temp
 			}).then(response => {

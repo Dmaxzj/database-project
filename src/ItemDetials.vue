@@ -1,6 +1,6 @@
 <template>
   <div class="item-detials-container">
-    <b-container  class="simple-container">
+    <b-container  class="content-container">
       <b-row>
         <b-col md="4">
           <b-img :src="path"/>
@@ -19,9 +19,8 @@
               <b-col>
                 <p>集数: {{workInfo.episode}}</p>
               </b-col>
-            </b-row>
-            
-            <b-row>
+            </b-row>           
+            <b-row v-if="isLogin">
               <b-col>
                 <b-button v-if="privateInfo.isFavorite" @click="changeFavorite">取消收藏</b-button>
                 <b-button v-else @click="changeFavorite">收藏</b-button>
@@ -59,7 +58,7 @@
 
 <script>
 import CommentsContainer from "./CommentsContainer.vue";
-
+import Bus from "./Bus.js"
 export default {
   name: "item-detials",
   props: ["detialsId"],
@@ -121,7 +120,6 @@ export default {
         catagory: "legal",
         episode: 12
       },
-      isLogin: true,
       privateInfo: {
         isFavorite: true,
         rank: null,
@@ -139,6 +137,7 @@ export default {
     this.fetchData();
     // 禁用滚动条
     $(document.body).css({
+      "padding-right": "17px",
       "overflow-x": "hidden",
       "overflow-y": "hidden"
     });
@@ -146,10 +145,10 @@ export default {
   mounted: function() {
     // 实现平滑滚动效果
     $("#full-screen").on("mousewheel", function(event) {
-      $(".simple-container").animate(
+      $(".content-container").animate(
         {
           scrollTop:
-            $(".simple-container").scrollTop() + event.originalEvent.deltaY
+            $(".content-container").scrollTop() + event.originalEvent.deltaY
         },
         30
       );
@@ -157,12 +156,8 @@ export default {
   },
   methods: {
     fetchData: function() { 
-      if (this.detialsId) {
-        this.path = "./assets/logo.png";
-      } else {
-        this.path = null;
-      }
-      var id = this.$route.fullPath.split("/");
+      this.path = "/public/images/logo.png";
+      let id = this.$route.fullPath.split("/");
       id = id[id.length - 1];
       //  this.$http.get('/api/works/' + id).then(response => {
       //   if (response.data.msg == 'success') {
@@ -183,17 +178,18 @@ export default {
     onClose: function() {
       this.$emit("closeDetialsHandler");
       $(document.body).css({
+        "padding-right": "0px",
         "overflow-x": "auto",
         "overflow-y": "auto"
       });
     },
     scrollDetials: function() {
-      console.log($(".simple-container"));
-      $(".simple-container").scrollHeight = 100;
+      console.log($(".content-container"));
+      $(".content-container").scrollHeight = 100;
     },
     changeFavorite: function() {
       this.$http
-        .push("/api/changeFavorite/?workid=" + this.id, {
+        .put("/api/changeFavorite/?workid=" + this.id, {
           isFavorite: !this.privateInfo.isFavorite
         })
         .then(
@@ -208,10 +204,11 @@ export default {
             Bus.$emit("showErr", response);
           }
         );
+      this.$root.isLogin = !this.$root.isLogin;
     },
     changeWatched: function() {
       this.$http
-        .push("/api/changeWatched/?workid=" + this.id, {
+        .put("/api/changeWatched/?workid=" + this.id, {
           watched: this.privateInfo.watched
         })
         .then(
@@ -222,14 +219,14 @@ export default {
               Bus.$emit("showErr", response.data.err);
             }
           },
-          response => {
-            Bus.$emit("showErr", response);
+          error => {
+            Bus.$emit("showErr", error.response.error);
           }
         );
     },
     changeRank: function() {
       this.$http
-        .push("/api/changeRank/?workid=" + this.id, {
+        .put("/api/changeRank/?workid=" + this.id, {
           watched: this.privateInfo.rank
         })
         .then(
@@ -244,6 +241,11 @@ export default {
             Bus.$emit("showErr", response);
           }
         );
+    }
+  },
+  computed: {
+    isLogin() {
+      return this.$root.isLogin;
     }
   }
 };
@@ -270,7 +272,7 @@ export default {
   opacity: 0.3;
   z-index: 1024;
 }
-.simple-container {
+.content-container {
   position: relative;
   max-width: 800px;
   margin-top: 5%;
@@ -279,5 +281,9 @@ export default {
   background-color: antiquewhite;
   overflow: auto;
   z-index: 1050;
+}
+
+.content-container::-webkit-scrollbar {
+  width: 2px
 }
 </style>

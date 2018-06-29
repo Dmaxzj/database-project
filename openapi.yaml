@@ -154,8 +154,6 @@ paths:
                       workbody:
                         type: string
                         description: work's introduction
-                      imagepath:
-                        type: string
                       catagory:
                         type: string
                       episode:
@@ -351,8 +349,6 @@ components:
         workname:
           type: string
         workid:
-          type: string
-        imagepath:
           type: string
   responses:
     errormassage:

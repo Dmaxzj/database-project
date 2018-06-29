@@ -40,21 +40,27 @@ export default {
   },
   methods: {
     login() {
-      // this.err = {};
-      // this.$http.post('api/login', {
-      // 	username: this.username,
-      // 	password: this.password
-      // }).then(response => {
-      // 	if (response.data.msg == 'success') {
-      // 		this.$router.push('/user');
-      // 		Bus.$emit('loginSuccess', this.username);
-      // 	} else {
-      // 		Bus.$emit('showErr', response.data.err);
-      // 	}
-      // }, response => {
-      // 	Bus.$emit("showErr", response);
-      // })
-      Bus.$emit("loginSuccess", "Jay");
+      this.err = {};
+      this.$http.post('api/user/login', {
+      	username: this.username,
+      	password: this.password
+      }).then(response => {
+      	if (response.data.success === true) {
+      		this.$router.push('/user');
+      		Bus.$emit('loginSuccess', {
+            username: response.data.username,
+            userid: response.data.userid,
+          });
+      	} else {
+      		Bus.$emit('showErr', response.data.error);
+      	}
+      }, error => {
+      	Bus.$emit("showErr", error.response.error);
+      })
+      Bus.$emit("loginSuccess", {
+        username: 'jay',
+        userid: 1
+      });
       this.$router.push("/user");
     },
     toRegist() {

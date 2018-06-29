@@ -30,7 +30,7 @@ export default new VueRouter({
             component: AddWork
         },
         {
-            path: '/userworks',
+            path: '/likes',
             component: ItemContainer,
             children: [{
                 path: ':id',
@@ -52,6 +52,10 @@ export default new VueRouter({
                 path: ':id',
                 component: ItemDetials
             }]
+        },
+        {   
+            path: '/',
+            component: ItemContainer,
         },
         {   
             path: '*',

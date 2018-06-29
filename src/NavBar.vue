@@ -17,7 +17,7 @@
       <b-nav-item to="/" @click="toHome">
         主页
       </b-nav-item>
-    <b-navbar-nav right v-if="isLogin">
+    <b-navbar-nav right v-if="getLoginState">
       <b-nav-item to="/addWork">
         新建
       </b-nav-item>
@@ -27,7 +27,7 @@
       <b-nav-item-dropdown>
         <!-- Using button-content slot -->
         <template slot="button-content">
-          <em>{{userName}}</em>
+          <em>{{getUsername}}</em>
         </template>
         <b-dropdown-item to="/user">Profile</b-dropdown-item>
         <b-dropdown-item @click="signOut">Signout</b-dropdown-item>
@@ -55,12 +55,6 @@ import Bus from "./Bus";
 
 export default {
   name: "my-nav-bar",
-  created: function() {
-    Bus.$on("loginSuccess", userName => {
-      this.userName = userName;
-      this.isLogin = true;
-    });
-  },
   data() {
     return {
       isLogin: false,
@@ -68,12 +62,19 @@ export default {
       searchKey: ''
     };
   },
+  computed: {
+    getLoginState: function() {
+      return this.$root.isLogin;
+    },
+    getUsername: function() {
+      return this.$root.username;
+    }
+  },
   methods: {
     signOut: function() {
-      this.$http.post("/signout").then(
+      this.$http.post("api/user/logout").then(
         respones => {
-          this.isLogin = false;
-          this.userName = null;
+          Bus.$emit('logout');
           this.$router.push("/works");
         },
         respones => {
@@ -89,6 +90,7 @@ export default {
     },
     toHome: function() {
       Bus.$emit('selectData', 'home');
+      console.log(this.$root);
     },
     toUserworks: function() {
       Bus.$emit('selectData', 'userworks');

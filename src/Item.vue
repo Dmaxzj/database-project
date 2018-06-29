@@ -56,4 +56,8 @@ export default {
   padding: 0px;
   overflow: hidden;
 }
+
+.item-container:hover {
+  cursor: pointer;
+}
 </style>

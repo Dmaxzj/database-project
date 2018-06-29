@@ -2,6 +2,7 @@
   <div id="app">
      <my-nav-bar/>
      <router-view></router-view>
+     <error-text></error-text>
   </div>
 </template>
 
@@ -9,16 +10,19 @@
 import Item from "./Item.vue"
 import MyNavBar from "./NavBar.vue"
 import ItemDetials from "./ItemDetials.vue"
+import ErrorText from "./ErrorText.vue"
 
 export default {
   components: {
     Item,
     MyNavBar,
     ItemDetials,
+    ErrorText
   },
   name: 'app',
-  data () {
-    return {}
+  data: function () {
+    return {
+    }
   }
 }
 </script>

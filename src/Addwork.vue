@@ -7,7 +7,7 @@
       <b-form-group label="标题："
                     label-text-align="left">
         <b-form-input type="text"
-                       v-model="work.title"
+                       v-model="work.name"
                       maxlength="40"
                       required
                       placeholder="输入标题">
@@ -16,7 +16,7 @@
       <b-form-group label="介绍："
                     label-text-align="left">
         <b-form-textarea  type="text"
-                          v-model="work.body"
+                          v-model="work.description"
                           :rows="4"
                           :max-rows="4"
                           required
@@ -56,34 +56,51 @@ export default {
   data: function() {
     return {
       work: {
-        title: "",
-        body: "",
+        name: "",
+        description: "",
         image: "",
         catagory: "",
         episode: ""
       }
     };
   },
+  created: function() {
+    if (this.$root.isLogin !== true) {
+      this.$router.push("/works");
+    }
+  },
   methods: {
     addWork: function() {
       this.$http
-        .post("/api/addwork", {
-          title: this.work.title,
-          body: this.work.body,
-          image: this.work.image,
+        .post("/api/work/create", {
+          name: this.work.name,
+          description: this.work.description,
           catagory: this.work.catagory,
           episode: this.work.episode
         })
         .then(
           response => {
-            if ((response.data.msg = "success")) {
-              this.$router.push("/userwork");
+            if (response.data.status === true) {
+              let formData = new FormData();
+              formData.append("file", this.work.image);
+              this.$http
+                .post("/" + response.data.data.workId + "/picture", formData, {
+                  headers: { "Content-Type": "multipart/form-data" }
+                })
+                .then(
+                  response => {
+                    this.$router.push("/likes");
+                  },
+                  error => {
+                    Bus.$emit("showErr", error.response.errorMessages);
+                  }
+                );
             } else {
-              Bus.$emit("showErr", response.data.err);
+              Bus.$emit("showErr", response.data.errorMessages);
             }
           },
-          response => {
-            Bus.$emit("showErr", response);
+          error => {
+            Bus.$emit("showErr", error.response.errorMessages);
           }
         );
     },
