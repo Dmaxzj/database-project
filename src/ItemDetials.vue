@@ -1,7 +1,9 @@
 <template>
   <div class="item-detials-container">
     <div class="wrap">
-    <b-container v-if="!isEditing" class="content-container">
+
+      <!-- 主页面 -->
+    <b-container v-if="state==type.mainPage || state == type.userInfo" class="content-container">
       <b-row>
         <b-col md="4">
           <b-img :src="path"/>
@@ -20,30 +22,7 @@
               <b-col>
                 <p>集数: {{workInfo.episode}}</p>
               </b-col>
-            </b-row>           
-            <!-- <b-row v-if="isLogin">
-              <b-col>
-                <b-button v-if="privateInfo.isFavorite" @click="changeFavorite">取消收藏</b-button>
-                <b-button v-else @click="changeFavorite">收藏</b-button>
-              </b-col>
-              <b-col md="8">
-                <b-input-group>
-                  <b-input-group-addon>评价: </b-input-group-addon>
-                  <b-form-select v-model="privateInfo.rank" :options="options"></b-form-select>
-                  <b-input-group-addon>
-                    <b-btn variant="outline-success" @click="changeRank">确定</b-btn>
-                  </b-input-group-addon>
-                </b-input-group>
-                <div class="w-100"></div>
-                <b-input-group>
-                  <b-input-group-addon>当前看至: </b-input-group-addon>
-                    <input type="number" class="form-control" id="watch-number" v-model="privateInfo.watched" @input="limiteNumber()">
-                  <b-input-group-addon name="watched">
-                    <b-btn variant="outline-success" @click="changeWatched">确定</b-btn>
-                  </b-input-group-addon>
-                </b-input-group>
-              </b-col>
-            </b-row> -->
+            </b-row>
           </b-container>
         </b-col>
       </b-row>
@@ -52,9 +31,13 @@
           <article class="work-description">{{workInfo.description}} </article>
         </b-col>
       </b-row>
+  
     </b-container>
-    <b-container v-else  class="content-container">
-    <b-form>
+
+
+      <!-- 编辑页面 -->
+    <b-container v-else-if="state==type.editing"  class="content-container">
+    <b-form id="edit-page">
       <b-form-group label="标题："
                     label-text-align="left">
         <b-form-input type="text"
@@ -63,6 +46,20 @@
                       required>
         </b-form-input>
       </b-form-group>
+      <b-row>
+        <b-col>
+          <b-form-input>
+          </b-form-input>
+        </b-col>
+        <b-col>
+          <b-form-input>
+          </b-form-input>
+        </b-col>
+      </b-row>
+      <b-row v-for="(metaData, index) in metaDatas" :key="index">
+        {{metaData}}
+        <v-buttoo @click="deleteMetaData(index)">删除</v-buttoo>
+      </b-row>
       <b-form-group label="介绍："
                     label-text-align="left">
         <b-form-textarea  type="text"
@@ -85,16 +82,64 @@
         </b-form-input>
       </b-form-group>		
     </b-form>
-
     </b-container>
+
+
+
+  
+
+    <div v-else class="content-container">
+      <b-container class="content-container">
+        <b-row v-for="(comment, index) in comments" :key="index">
+          <b-col md="12">
+            {{comment.author}}
+          </b-col>
+          <b-col md="12">
+            {{comment.body}}
+          </b-col>
+        </b-row>
+      </b-container>
+      <div id="comment-box">
+        <b-input-group>
+          <b-form-input type="text" v-model="commentBuffer" placeholder="评论">
+          </b-form-input>
+        </b-input-group>
+      </div>
+
+    </div>
+      
       <div id="bottom-nav-bar" v-if="isLogin">
-        <b-button v-if="!isEditing" @click="onEditingClick">编辑</b-button>
-        <b-button v-else @click="onEditingClick">取消</b-button>
-        <b-button>查看</b-button>
-        <b-button>评论</b-button>
+         <b-container id="user-info" v-if="state==type.userInfo">
+        <b-row>
+          <b-col>
+            <b-button v-if="privateInfo.isFavorite" @click="changeFavorite">取消收藏</b-button>
+            <b-button v-else @click="changeFavorite">收藏</b-button>
+          </b-col>
+          <b-col md="8">
+            <b-input-group>
+              <b-input-group-addon>评价: </b-input-group-addon>
+              <b-form-select v-model="privateInfo.rank" :options="options"></b-form-select>
+              <b-input-group-addon>
+                <b-btn variant="outline-success" @click="changeRank">确定</b-btn>
+              </b-input-group-addon>
+            </b-input-group>
+            <div class="w-100"></div>
+            <b-input-group>
+              <b-input-group-addon>当前看至: </b-input-group-addon>
+                <input type="number" class="form-control" id="watch-number" v-model="privateInfo.watched" @input="limiteNumber()">
+              <b-input-group-addon name="watched">
+                <b-btn variant="outline-success" @click="changeWatched">确定</b-btn>
+              </b-input-group-addon>
+            </b-input-group>
+          </b-col>
+        </b-row>
+      </b-container>
+        <b-button v-if="state==type.mainPage" @click="state = type.comment">评论</b-button>
+        <b-button v-if="state != type.mainPage && state != type.edit" @click="state = type.mainPage">返回</b-button>
+        <b-button v-if="state==type.mainPage" @click="state = type.userInfo">查看</b-button>
+        <b-button v-if="state != type.editing" @click="onEditingClick">编辑</b-button>
       </div>
     </div>
-    <!-- <comments-container></comments-container> -->
     <div id="full-screen" @click="onClose" @scroll="scrollDetials"></div>
   </div>
 </template>
@@ -102,6 +147,7 @@
 <script>
 import CommentsContainer from "./CommentsContainer.vue";
 import Bus from "./Bus.js";
+
 export default {
   name: "item-detials",
   components: {
@@ -110,7 +156,13 @@ export default {
   data() {
     return {
       path: null,
-      isEditing: false,
+      state: 3,
+      type: {
+        editing: 1,
+        comment: 2,
+        mainPage: 3,
+        userInfo: 4
+      },
       workInfo: {
         id: "",
         name: "legal high",
@@ -118,15 +170,7 @@ export default {
           "dasdasdasdasasdasdasdasasdasd\
         asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
         asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
+\
         asdasdasdasdasdddddddddddddddddddddddddddsdasdasdasdsdasdasdasdasddadasdasasdasdasasdasdasdasdasdasdasdasdasdasdasdasdasd asdasasdasdas",
         catagory: "legal",
         episode: 12
@@ -183,7 +227,7 @@ export default {
             $(".content-container").scrollTop() + event.originalEvent.deltaY
         },
         150,
-        'linear'
+        "linear"
       );
     });
   },
@@ -192,8 +236,8 @@ export default {
       this.path = "/public/images/logo.png";
       let id = this.$route.fullPath.split("/");
       id = id[id.length - 1];
-      //  this.$http.get('/api/works/' + id).then(response => {
-      //   if (response.data.msg == 'success') {
+      //  this.$http.get('/api/work/' + id).then(response => {
+      //   if (response.data.success == true) {
       //     this.workInfo = response.data.workInfo;
       //     this.privateInfo = response.data.privateInfo;
       //   } else {
@@ -276,7 +320,7 @@ export default {
         );
     },
     onEditingClick: function() {
-      this.isEditing = !this.isEditing;
+      this.state = this.state == this.type.editing ? this.type.mainPage : this.type.editing;
       this.editWork.name = this.workInfo.name;
       this.editWork.description = this.workInfo.description;
       this.editWork.episode = this.workInfo.episode;
@@ -347,9 +391,23 @@ export default {
 }
 
 #bottom-nav-bar {
+  position: relative;
+  border-top: 1px solid black;
 }
 
-#select-picture  {
-  overflow:auto;
+#bottom-nav-bar button {
+  float: right;
+}
+
+#user-info {
+  position: absolute;
+  top: -110px;
+  margin: 0 1%;
+  border: 1px solid black;
+  border-radius: 2px;
+  height: 100px;
+  width: 98%;
+  background-color: white;
+
 }
 </style>
