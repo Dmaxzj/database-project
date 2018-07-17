@@ -22,9 +22,10 @@ export default {
 	},
 	methods: {
 		showError: function(err) {
-            this.error = err;
+            this.errors = err;
+            console.log(err);
             setTimeout(() => {
-                this.error = null;
+                this.errors = null;
             }, 1200);
         }
 	}

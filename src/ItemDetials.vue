@@ -1,7 +1,11 @@
 <template>
   <div class="item-detials-container">
     <div class="wrap">
-
+    <header>
+      asdfasdf
+      {{workInfo.name}}
+     <svg t="1531829082607" @click="onClose" class="close-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1039" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M505.173333 416.426666 122.88 27.306666c-27.306667-27.306667-68.266667-27.306667-102.4 0l0 0c-27.306667 27.306667-27.306667 68.266667 0 102.4L409.6 512l-389.12 389.12c-27.306667 27.306667-27.306667 68.266667 0 102.4l0 0c27.306667 27.306667 68.266667 27.306667 102.4 0l389.12-389.12 389.12 389.12c27.306667 27.306667 68.266667 27.306667 102.4 0l0 0c27.306667-27.306667 27.306667-68.266667 0-102.4L607.573333 512l389.12-389.12c27.306667-27.306667 27.306667-68.266667 0-102.4l0 0c-27.306667-27.306667-68.266667-27.306667-102.4 0L505.173333 416.426666 505.173333 416.426666z" p-id="1040" fill="#707070"></path></svg>
+    </header>
       <!-- 主页面 -->
     <b-container v-if="state==type.mainPage || state == type.userInfo" class="content-container">
       <b-row>
@@ -11,18 +15,40 @@
         <b-col md="8">
           <b-container>
             <b-row>
-              <b-col md="4">
-                <p>{{workInfo.name}} </p>
+              <b-col>
+                <p>集数: {{workInfo.episodes}}</p>
               </b-col>
             </b-row>
-            <b-row>
-              <b-col>
-                <p>类型: {{workInfo.catagory}}</p>
-              </b-col>
-              <b-col>
-                <p>集数: {{workInfo.episode}}</p>
-              </b-col>
-            </b-row>
+
+            <b-container id="user-info" v-if="isLogin">
+              <b-row>
+                <b-col>
+                  <b-button v-if="privateInfo.isFavorite" @click="changeFavorite" class="like-btn">取消收藏</b-button>
+                  <b-button v-else @click="changeFavorite">收藏</b-button>
+                </b-col>
+              </b-row>
+                <b-row>
+                  <b-col>
+                  <b-input-group prepend="评价">
+                      <b-form-select v-model="privateInfo.rank" :options="options"></b-form-select>
+                    <b-input-group-addon>
+                      <b-btn variant="outline-success" @click="changeRank">修改</b-btn>
+                    </b-input-group-addon>
+                  </b-input-group>
+                  </b-col>
+                </b-row>
+                <b-row>
+                  <b-col>
+                  <b-input-group prepend="当前看至">
+                      <input type="number" class="form-control" id="watch-number" v-model="privateInfo.watched" @input="limiteNumber()">
+                    <b-input-group-addon name="watched">
+                      <b-btn variant="outline-success" @click="changeWatched">修改</b-btn>
+                    </b-input-group-addon>
+                  </b-input-group>
+                  </b-col>
+              </b-row>
+            </b-container>
+
           </b-container>
         </b-col>
       </b-row>
@@ -38,29 +64,18 @@
       <!-- 编辑页面 -->
     <b-container v-else-if="state==type.editing"  class="content-container">
     <b-form id="edit-page">
-      <b-form-group label="标题："
+      <b-input-group label="标题："
                     label-text-align="left">
         <b-form-input type="text"
                        v-model="editWork.name"
                       maxlength="40"
                       required>
         </b-form-input>
-      </b-form-group>
-      <b-row>
-        <b-col>
-          <b-form-input>
-          </b-form-input>
-        </b-col>
-        <b-col>
-          <b-form-input>
-          </b-form-input>
-        </b-col>
-      </b-row>
-      <b-row v-for="(metaData, index) in metaDatas" :key="index">
-        {{metaData}}
-        <v-buttoo @click="deleteMetaData(index)">删除</v-buttoo>
-      </b-row>
-      <b-form-group label="介绍："
+        <b-input-group-append>
+            <b-btn variant="outline-success" @click="updateWorkInfo('title')">提交</b-btn>
+        </b-input-group-append>
+      </b-input-group>
+      <b-input-group label="介绍："
                     label-text-align="left">
         <b-form-textarea  type="text"
                           v-model="editWork.description"
@@ -69,33 +84,34 @@
                           required
                           style="resize: none">
         </b-form-textarea>
-      </b-form-group>
-      <div id="select-picture">
-        选择图片
+          <b-input-group-append>
+            <b-btn variant="outline-success" @click="updateWorkInfo('description')">提交</b-btn>
+          </b-input-group-append>
+      </b-input-group>
+      <b-input-group id="select-picture">
         <b-form-file v-model="picture" :state="Boolean(picture)" accept="image/*"></b-form-file>
-      </div>
-      <b-form-group label="集数："
-                    label-text-align="left">
+          <b-input-group-append>
+            <b-btn variant="outline-success" @click="updateCover">提交</b-btn>
+          </b-input-group-append>
+      </b-input-group>
+
+      <b-input-group label="集数：">
         <b-form-input  type="number"
-                          v-model="editWork.episode"
+                          v-model="editWork.episodes"
                           required>
         </b-form-input>
-      </b-form-group>		
+      <b-input-group-append>
+            <b-btn variant="outline-success" @click="updateWorkInfo('episodes')">提交</b-btn>
+      </b-input-group-append>
+      </b-input-group>		
     </b-form>
     </b-container>
 
-
-
-  
-
     <div v-else class="content-container">
-      <b-container class="content-container">
-        <b-row v-for="(comment, index) in comments" :key="index">
+      <b-container id="comment-page" class="content-container">
+        <b-row v-for="(comment, index) in workInfo.comments" :key="index">
           <b-col md="12">
-            {{comment.author}}
-          </b-col>
-          <b-col md="12">
-            {{comment.body}}
+            {{comment.content}}
           </b-col>
         </b-row>
       </b-container>
@@ -103,41 +119,20 @@
         <b-input-group>
           <b-form-input type="text" v-model="commentBuffer" placeholder="评论">
           </b-form-input>
+          <b-input-group-append>
+            <b-btn variant="outline-success" @click="addComment">发送</b-btn>
+          </b-input-group-append>
         </b-input-group>
       </div>
 
     </div>
       
       <div id="bottom-nav-bar" v-if="isLogin">
-         <b-container id="user-info" v-if="state==type.userInfo">
-        <b-row>
-          <b-col>
-            <b-button v-if="privateInfo.isFavorite" @click="changeFavorite">取消收藏</b-button>
-            <b-button v-else @click="changeFavorite">收藏</b-button>
-          </b-col>
-          <b-col md="8">
-            <b-input-group>
-              <b-input-group-addon>评价: </b-input-group-addon>
-              <b-form-select v-model="privateInfo.rank" :options="options"></b-form-select>
-              <b-input-group-addon>
-                <b-btn variant="outline-success" @click="changeRank">确定</b-btn>
-              </b-input-group-addon>
-            </b-input-group>
-            <div class="w-100"></div>
-            <b-input-group>
-              <b-input-group-addon>当前看至: </b-input-group-addon>
-                <input type="number" class="form-control" id="watch-number" v-model="privateInfo.watched" @input="limiteNumber()">
-              <b-input-group-addon name="watched">
-                <b-btn variant="outline-success" @click="changeWatched">确定</b-btn>
-              </b-input-group-addon>
-            </b-input-group>
-          </b-col>
-        </b-row>
-      </b-container>
-        <b-button v-if="state==type.mainPage" @click="state = type.comment">评论</b-button>
+         
+        <b-button v-if="state==type.mainPage" :variant="'primary'" @click="state = type.comment">评论</b-button>
         <b-button v-if="state != type.mainPage && state != type.edit" @click="state = type.mainPage">返回</b-button>
-        <b-button v-if="state==type.mainPage" @click="state = type.userInfo">查看</b-button>
-        <b-button v-if="state != type.editing" @click="onEditingClick">编辑</b-button>
+        <!-- <b-button v-if="state==type.mainPage" @click="state = type.userInfo">查看</b-button> -->
+        <b-button v-if="state != type.editing" :variant="'primary'" @click="onEditingClick">编辑</b-button>
       </div>
     </div>
     <div id="full-screen" @click="onClose" @scroll="scrollDetials"></div>
@@ -145,17 +140,13 @@
 </template>
 
 <script>
-import CommentsContainer from "./CommentsContainer.vue";
 import Bus from "./Bus.js";
 
 export default {
   name: "item-detials",
-  components: {
-    CommentsContainer
-  },
   data() {
     return {
-      path: null,
+      path: '/src/assets/1.png',
       state: 3,
       type: {
         editing: 1,
@@ -164,16 +155,28 @@ export default {
         userInfo: 4
       },
       workInfo: {
-        id: "",
-        name: "legal high",
-        description:
-          "dasdasdasdasasdasdasdasasdasd\
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-\
-        asdasdasdasdasdddddddddddddddddddddddddddsdasdasdasdsdasdasdasdasddadasdasasdasdasasdasdasdasdasdasdasdasdasdasdasdasdasd asdasasdasdas",
-        catagory: "legal",
-        episode: 12
+        description: "",
+        episodes: 12,
+        comments: [
+          {
+            content: 'asdfasdfa'
+          },
+          {
+            content: 'asdfasdfa'
+          },
+          {
+            content: 'asdfadsdasdaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaasdfa'
+          },
+          {
+            content: 'asdfasdfa'
+          },
+          {
+            content: 'asdfasdfa'
+          },
+          {
+            content: 'asdfasdfa'
+          }
+        ]
       },
       privateInfo: {
         isFavorite: true,
@@ -188,24 +191,8 @@ export default {
       ],
       picture: null,
       editWork: {
-        name: "legal high",
-        description:
-          "dasdasdasdasasdasdasdasasdasd\
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasssssssssssssssssssssssssssssssssssssssdasd \
-        asdasdasdasdasdddddddddddddddddddddddddddsdasdasdasdsdasdasdasdasddadasdasasdasdasasdasdasdasdasdasdasdasdasdasdasdasdasd asdasasdasdas",
-        catagory: "legal",
-        episode: 12
-      }
+      },
+      commentBuffer: null
     };
   },
   created: function() {
@@ -233,23 +220,24 @@ export default {
   },
   methods: {
     fetchData: function() {
-      this.path = "/public/images/logo.png";
       let id = this.$route.fullPath.split("/");
       id = id[id.length - 1];
-      //  this.$http.get('/api/work/' + id).then(response => {
-      //   if (response.data.success == true) {
-      //     this.workInfo = response.data.workInfo;
-      //     this.privateInfo = response.data.privateInfo;
-      //   } else {
-      //     Bus.$emit('showErr', response.data.err);
-      //   }
-      // }, response => {
-      //   Bus.$emit('showErr', response);
-      // })
+      this.workInfo._id = id;
+      // this.path = "api/work/" +  id + "/cover";
+       this.$http.get('/api/work/' + id).then(response => {
+        if (response.data.status == true) {
+          this.workInfo = response.data.work;
+          this.privateInfo = response.data.privateInfo;
+        } else {
+          Bus.$emit('showErr', response.data.errorMessages);
+        }
+      }, error => {
+        Bus.$emit('showErr', error.response.data.errorMessages);
+      })
     },
     limiteNumber: function() {
-      if (this.privateInfo.watched > this.workInfo.episode)
-        this.privateInfo.watched = this.workInfo.episode;
+      if (this.privateInfo.watched > this.workInfo.episodes)
+        this.privateInfo.watched = this.workInfo.episodes;
       else if (this.privateInfo.watched < 0) this.privateInfo.watched = 0;
     },
     onClose: function() {
@@ -261,27 +249,25 @@ export default {
       });
     },
     scrollDetials: function() {
-      console.log($(".content-container"));
       $(".content-container").scrollHeight = 100;
     },
     changeFavorite: function() {
       this.$http
-        .put("/api/changeFavorite/?workid=" + this.id, {
-          isFavorite: !this.privateInfo.isFavorite
-        })
+        .put("/api/work/" + this.workInfo._id +
+        this.privateInfo.isFavorite == true ?
+        "/unlike" : "/like")
         .then(
           response => {
-            if (response.data.msg == "success") {
-              this.privateInfo.isFavorite = response.data.isFavorite;
+            if (response.data.status == true) {
+              this.privateInfo.isFavorite = !this.privateInfo.isFavorite;
             } else {
-              Bus.$emit("showErr", response.data.err);
+              Bus.$emit("showErr", response.data.errorMessages);
             }
           },
-          response => {
-            Bus.$emit("showErr", response);
+          error => {
+            Bus.$emit("showErr", error.response.data.errorMessages);
           }
         );
-      this.$root.isLogin = !this.$root.isLogin;
     },
     changeWatched: function() {
       this.$http
@@ -290,40 +276,109 @@ export default {
         })
         .then(
           response => {
-            if (response.data.msg == "success") {
+            if (response.data.status == true) {
               this.privateInfo.watched = response.data.watched;
             } else {
-              Bus.$emit("showErr", response.data.err);
+              Bus.$emit("showErr", response.data.errorMessages);
             }
           },
           error => {
-            Bus.$emit("showErr", error.response.error);
+            Bus.$emit("showErr", error.response.data.errorMessages);
           }
         );
     },
     changeRank: function() {
       this.$http
-        .put("/api/changeRank/?workid=" + this.id, {
+        .put("/api/" + this.id, {
           watched: this.privateInfo.rank
         })
         .then(
           response => {
-            if (response.data.msg == "success") {
+            if (response.data.status == true) {
               this.privateInfo.rank = response.data.rank;
             } else {
-              Bus.$emit("showErr", response.data.err);
+              Bus.$emit("showErr", response.data.errorMessages);
             }
           },
-          response => {
-            Bus.$emit("showErr", response);
+          error => {
+            Bus.$emit("showErr", error.response.data.errorMessages);
           }
         );
     },
     onEditingClick: function() {
       this.state = this.state == this.type.editing ? this.type.mainPage : this.type.editing;
       this.editWork.name = this.workInfo.name;
-      this.editWork.description = this.workInfo.description;
-      this.editWork.episode = this.workInfo.episode;
+      this.editWork.description = this.workInfo.description + "";
+      this.editWork.episodes = this.workInfo.episodes;
+    },
+    addComment: function() {
+      this.$http
+        .post("/api/work/" + this.workInfo._id + "/comment/new", {
+          content: this.commentBuffer
+        })
+        .then(
+          response => {
+            if (response.data.status == true) {
+              this.privateInfo.watched = response.data.watched;
+            } else {
+              Bus.$emit("showErr", response.data.errorMessages);
+            }
+            this.$http.get("/api/work/" + this.workInfo._id + "/comment").then(response => {
+              if (response.data.status == true) {
+                this.workInfo.comments = response.data.comments;
+              }
+            }, error => {
+              Bus.$emit("showErr", error.response.data.errorMessages);
+            })
+          },
+          error => {
+            Bus.$emit("showErr", error.response.data.errorMessages);
+          }
+        );
+    },
+    updateCover: function() {
+      let formData = new FormData();
+      formData.append("file", this.picture);
+      this.$http
+        .post("/api/work/" + response.data.work._id + "/cover", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        })
+        .then(
+          response => {
+            if (response.data.status == true) {
+              const temp = this.path;
+              this.path = null;
+              this.path = temp;
+              this.state = this.type.mainPage;
+            }
+          },
+          error => {
+            Bus.$emit("showErr", error.response.data.errorMessages);
+          }
+        );
+    },
+    updateWorkInfo: function(param) {
+      if (param == 'title') {
+        this.workInfo.name = this.editWork.name
+      } else if (param == 'desciption') {
+        this.workInfo.description = this.editWork.description;
+      } else {
+        this.workInfo.episodes = this.editWork.episodes;
+      }
+      this.$http
+        .put("/api/work/" + this.workInfo._id + "/update",{ work: this.workInfo})
+        .then(
+          response => {
+            if (response.data.status == true) {
+              this.state = this.type.mainPage;
+            } else {
+              Bus.$emit("showErr", response.data.errorMessages);
+            }
+          },
+          error => {
+            Bus.$emit("showErr", error.response.data.errorMessages);
+          }
+        );
     }
   },
   computed: {
@@ -358,14 +413,15 @@ export default {
   text-align: left;
   background-color: black;
   opacity: 0.3;
-  z-index: 1024;
+  z-index: 8;
 }
 .content-container {
   position: relative;
   width: 100%;
-  height: 90%;
+  height: 80%;
   overflow-y: auto;
   overflow-x: hidden;
+  z-index: inherit;
 }
 
 .content-container::-webkit-scrollbar {
@@ -381,33 +437,114 @@ export default {
 }
 .wrap {
   position: relative;
-  width: 800px;
-  height: 60%;
+  width: 500px;
+  height: 80%;
   margin: auto;
-  margin-top: 5%;
-  z-index: 1050;
-  border-radius: 5px;
+  margin-top: 3%;
+  z-index: 10;
+  border-radius: 10px;
   background-color: white;
 }
 
 #bottom-nav-bar {
   position: relative;
-  border-top: 1px solid black;
+  background-color: rgb(230, 230, 230);
+  height: 10%;
+  border-radius: 0 0 10px 10px;
 }
 
 #bottom-nav-bar button {
-  float: right;
+  position: absolute;
+  margin-top: 1%;
+  width: 30%;
+  height: 80%;
+}
+
+#bottom-nav-bar :nth-child(1) {
+  right: 2%;
+}
+
+#bottom-nav-bar :nth-child(2) {
+  left: 2%;
 }
 
 #user-info {
-  position: absolute;
-  top: -110px;
-  margin: 0 1%;
-  border: 1px solid black;
-  border-radius: 2px;
-  height: 100px;
-  width: 98%;
-  background-color: white;
-
+  padding: 0;
 }
+
+#user-info .row {
+  margin-bottom: 30px;
+}
+
+header {
+  text-align: center;
+  font-size: 25pt;
+  font-weight: bold;
+  height: 10%;
+}
+
+#comment-box {
+  position: absolute;
+  width: 100%;
+  bottom: 5px;
+}
+
+.close-icon {
+  position: absolute;
+  right: -15px;
+  top: -15px;
+  width: 31px;
+  height: 31px;
+  border: none;
+  background-color: white;
+  padding: 5px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.close-icon:hover {
+  background-color: #008bdd;
+}
+
+.wrap img {
+  border-radius: 20px;
+  width: 160px;
+  height: 240px;
+  border: none;
+}
+
+
+.close-icon:hover path {
+  fill: white;
+}
+
+#edit-page > div{
+  margin-bottom: 20px;
+}
+
+#comment-page .row{
+  min-height: 10%;
+  width: 80%;
+  padding: 5px;
+  margin: auto;
+  margin-bottom: 5px;
+  word-wrap: break-word;
+  word-break: normal;
+  border-bottom: 1px solid #c0c0c0;
+}
+
+.like-btn {
+  border-color: hotpink;
+  background-color: hotpink;
+}
+
+.like-btn:hover,
+.like-btn:focus  {
+  box-shadow: 0 0 0 0.2rem  rgb(255, 75, 150);
+   border-color: rgb(255, 75, 150);
+  background-color: rgb(255, 75, 150);
+}
+
+
+
 </style>

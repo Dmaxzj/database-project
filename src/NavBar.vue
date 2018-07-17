@@ -2,7 +2,7 @@
 <div>
   <b-navbar toggleable="md" class="top-bar">
 
-  <b-navbar-brand>Title</b-navbar-brand>
+  <b-navbar-brand>Welcome</b-navbar-brand>
 
   <b-collapse is-nav id="nav_collapse">
 
@@ -10,11 +10,15 @@
     <b-navbar-nav class="ml-auto">
 
       <b-nav-form>
-        <b-form-input size="sm" class="mr-sm-3" type="text" placeholder="搜索" v-model="searchKey"/>
-        <b-button size="sm" class="my-2 my-sm-2" type="submit" form="??" @click="searchByKey">搜索</b-button>
+        <b-input-group>
+          <b-form-input  type="text" placeholder="搜索" v-model="searchKey"/>
+          <b-input-group-append>
+            <b-button style="z-index: 0"  type="submit" form="??" @click="searchByKey">搜索</b-button>
+          </b-input-group-append>
+        </b-input-group>
       </b-nav-form>
 
-      <b-nav-item to="/" @click="toHome">
+      <b-nav-item to="/works" @click="toHome">
         主页
       </b-nav-item>
     <b-navbar-nav right v-if="getLoginState">
@@ -29,8 +33,8 @@
         <template slot="button-content">
           <em>{{getUsername}}</em>
         </template>
-        <b-dropdown-item to="/user">Profile</b-dropdown-item>
-        <b-dropdown-item @click="signOut">Signout</b-dropdown-item>
+        <b-dropdown-item to="/user">用户信息</b-dropdown-item>
+        <b-dropdown-item @click="signOut">退出</b-dropdown-item>
       </b-nav-item-dropdown>
     </b-navbar-nav>
       <b-navbar-nav right v-else>
@@ -90,10 +94,9 @@ export default {
     },
     toHome: function() {
       Bus.$emit('selectData', 'home');
-      console.log(this.$root);
     },
     toUserworks: function() {
-      Bus.$emit('selectData', 'userworks');
+      Bus.$emit('selectData', 'likes');
     }
   }
 };
@@ -105,9 +108,26 @@ li {
 }
 
 hr {
+  height: 1px;
   width: 80%;
-  border: 1px #c4c4c4 solid;
+  background-color: #c4c4c4;
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
+}
+
+.card {
+  margin: auto;
+  width: 50%;
+}
+
+.navbar-brand {
+  width: 100px;
+  height: 100px;
+  border-right: 2px solid rgb(200, 200, 200);
+  border-bottom: 2px solid rgb(200, 200, 200);
+  box-shadow: 5px 5px 10px rgb(200, 200, 200);
+  padding-top: 30px;
+  padding-right: 5px;
+  border-radius: 50%;
 }
 </style>

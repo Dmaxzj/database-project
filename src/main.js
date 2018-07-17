@@ -15,22 +15,30 @@ Vue.use(BootstrapVue);
 new Vue({
   el: '#app',
   router,
-  data: function() {
+  data: function () {
     return {
-      isLogin: false,
+      isLogin: true,
       username: null,
-      userid: null
+      userId: null
     }
   },
-  created: function() {
+  created: function () {
+    this.$http.get('/api/user').then(response => {
+      if (response.data.status == true) {
+        this.username = response.data.user.username;
+        this.isLogin = true;
+      }
+    }, error => {
+
+    })
     Bus.$on('logout', () => {
       this.isLogin = false;
       this.username = null;
-      this.userid = null;
+      this.userId = null;
     })
     Bus.$on("loginSuccess", obj => {
-      this.userName = obj.username;
-      this.userid = obj.userid;
+      this.username = obj.username;
+      this.userId = obj.userid;
       this.isLogin = true;
     });
   },

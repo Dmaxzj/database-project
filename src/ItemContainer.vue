@@ -1,6 +1,7 @@
 <template>
   <div id="item-container" ref="itemContainer">
-     <item v-for="(item, index) in items" :key="index" @click.native="showDetials(item.id, item.name)" :path="item.path" :name="item.name"></item>
+    <p v-if="!items"> 现在还没有作品, 快去创建一个吧~~ </p>
+     <item v-for="(itemId, index) in items" :key="index" @click.native="showDetials(itemId)" :workId="itemId"></item>
      <router-view @closeDetialsHandler="closeDetials" :detailsId="detailsId"></router-view>
   </div>
 </template>
@@ -35,50 +36,29 @@ export default {
       const def = this.fetchData;
       const func = lookUp[method] || def;
       func();
+      this.items = [234123];
     },
     fetchDataByUser: function() {
-      let i = [];
-      for (let index = 1; index < 5; index++) {
-        i.push(
-          {
-            id: index,
-            name: "aad",
-            path: "/public/images/1.jpg"
-          }
-        )       
-      }
-      this.items = i;
-      this.$http.get('/api/likes').then(response => {
+      this.$http.get('/api/user/likes').then(response => {
         if (response.data.status === true) {
-          this.items = response.data.data.userworks;
+          this.items = response.data.likes;
         } else {
           Bus.$emit('showErr', response.data.errorMessages);
         }
-      }, response => {
-        Bus.$emit('showErr', response.data.errorMessages);
+      }, error => {
+        Bus.$emit('showErr', error.response.data.errorMessages);
       }) 
     },
     fetchDataBySearch: function() {
-      let i = [];
-      for (let index = 1; index < 5; index++) {
-        i.push(
-          {
-            id: index,
-            name: "aad",
-            path: "/public/images/1.jpg"
-          }
-        )       
-      }
-      this.items = i;
-      //  this.$http.get('/api/search?key=' + this.$route.query.key).then(response => {
-      //   if (response.data.msg == 'success') {
-      //     this.items = response.data.userworks;
-      //   } else {
-      //     Bus.$emit('showErr', response.data.err);
-      //   }
-      // }, response => {
-      //   Bus.$emit('showErr', response);
-      // }) 
+       this.$http.get('/api/search?key=' + this.$route.query.key).then(response => {
+        if (response.data.status == true) {
+          this.items = response.data.userworks;
+        } else {
+          Bus.$emit('showErr', response.data.errorMessages);
+        }
+      }, error => {
+        Bus.$emit('showErr', error.response.data.errorMessages);
+      }) 
     },
     showDetials: function (id, name) {
       this.detailsId = id;
@@ -89,25 +69,14 @@ export default {
       this.$router.back();
     },
     fetchData: function() {
-      let i = [];
-      for (let index = 1; index < 20; index++) {
-        i.push(
-          {
-            id: index,
-            name: "aad",
-            path: "/public/images/logo.png"
-          }
-        )       
-      }
-      this.items = i;
-       this.$http.get('/api/works').then(response => {
+       this.$http.get('/api/work').then(response => {
         if (response.data.status === true) {
-          this.items = response.data.data.works;
+          this.items = response.data.workIdList;
         } else {
           Bus.$emit('showErr', response.data.errorMessages);
         }
       }, error => {
-        Bus.$emit('showErr', error.response.errorMessages);
+        Bus.$emit('showErr', error.response.data.errorMessages);
       }) 
     }
   }

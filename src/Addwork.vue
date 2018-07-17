@@ -1,10 +1,11 @@
 <template>
-  <b-card bg-variant="light"
+  <b-card id="addwork-card"
+          bg-variant="light"
           header="新建作品"
           header-text-variant="center"
           v-if="work">
     <b-form>
-      <b-form-group label="标题："
+      <b-form-group label="名称："
                     label-text-align="left">
         <b-form-input type="text"
                        v-model="work.name"
@@ -23,17 +24,9 @@
                           placeholder="内容介绍">
         </b-form-textarea>
       </b-form-group>
-      <div>
-        选择图片
+      <b-form-group label="图片："
+                    label-text-align="left">  
         <b-form-file v-model="work.image" :state="Boolean(work.image)" accept="image/*"></b-form-file>
-      </div>
-      <b-form-group label="标签："
-                    label-text-align="left">
-        <b-form-input  type="text"
-                          v-model="work.catagory"
-                          required
-                          placeholder="分类">
-        </b-form-input>
       </b-form-group>
       <b-form-group label="集数："
                     label-text-align="left">
@@ -43,8 +36,8 @@
                           placeholder="输入总集数">
         </b-form-input>
       </b-form-group>
-      <b-button @click="addWork" size="lg">新建</b-button>
-      <b-button @click="cancle" size="lg">返回</b-button>			
+      <b-button @click="addWork" :disabled="hadError" :variant="'primary'" size="lg" class="add-btn btn-primary">新建</b-button>
+      <b-button @click="cancle" size="lg" class="cancle-btn">返回</b-button>			
     </b-form>
   </b-card>
 </template>
@@ -59,7 +52,6 @@ export default {
         name: "",
         description: "",
         image: "",
-        catagory: "",
         episode: ""
       }
     };
@@ -69,13 +61,18 @@ export default {
       this.$router.push("/works");
     }
   },
+  computed: {
+    hadError: function() {
+      if (this.work.name == "" || this.work.description == "" || this.work.episode == "") return true;
+      else return false;  
+    }
+  },
   methods: {
     addWork: function() {
       this.$http
         .post("/api/work/create", {
           name: this.work.name,
           description: this.work.description,
-          catagory: this.work.catagory,
           episode: this.work.episode
         })
         .then(
@@ -84,15 +81,16 @@ export default {
               let formData = new FormData();
               formData.append("file", this.work.image);
               this.$http
-                .post("/" + response.data.data.workId + "/picture", formData, {
+                .post("/api/work/" + response.data.work._id + "/cover", formData, {
                   headers: { "Content-Type": "multipart/form-data" }
                 })
                 .then(
                   response => {
-                    this.$router.push("/likes");
+                    this.$router.push("/works");
                   },
                   error => {
-                    Bus.$emit("showErr", error.response.errorMessages);
+                    this.$router.push("/works");
+                    Bus.$emit("showErr", error.response.data.errorMessages);
                   }
                 );
             } else {
@@ -100,7 +98,7 @@ export default {
             }
           },
           error => {
-            Bus.$emit("showErr", error.response.errorMessages);
+            Bus.$emit("showErr", error.response.data.errorMessages);
           }
         );
     },
@@ -112,4 +110,42 @@ export default {
 </script>
 
 <style type="text/css">
+#addwork-card {
+	position: relative;
+	margin-top: 50px;
+  margin-bottom: 50px;
+	font-size: 16pt;
+}
+
+#addwork-card .card-header {
+	font-weight: bold;
+}
+
+#addwork-card p {
+	height: 30px;
+	font-size: 15pt;
+	width: 100%;
+}
+
+#addwork-card .card-body {
+	padding-top: 5px;
+	padding-bottom: 60px;
+}
+
+#addwork-card .add-btn {
+	width: 8rem;
+	position: absolute;
+	left: 1.25rem;
+  transition: all ease-in-out 0.3s 0s;
+}
+
+#addwork-card .disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+#addwork-card .cancle-btn {
+	width: 8rem;
+	position: absolute;
+	right: 1.25rem;
+}
 </style>

@@ -54,12 +54,7 @@ export default new VueRouter({
             }]
         },
         {   
-            path: '/',
-            component: ItemContainer,
-        },
-        {   
             path: '*',
-            component: ItemContainer,
             redirect: '/works'
         }
     ]
