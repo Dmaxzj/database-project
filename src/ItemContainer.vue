@@ -36,12 +36,15 @@ export default {
       const def = this.fetchData;
       const func = lookUp[method] || def;
       func();
-      this.items = [234123];
     },
     fetchDataByUser: function() {
       this.$http.get('/api/user/likes').then(response => {
         if (response.data.status === true) {
-          this.items = response.data.likes;
+          this.items = [];
+          const likes = response.data.likes;
+          likes.forEach(element => {
+            this.items.push(element.workId);
+          });
         } else {
           Bus.$emit('showErr', response.data.errorMessages);
         }
@@ -50,7 +53,7 @@ export default {
       }) 
     },
     fetchDataBySearch: function() {
-       this.$http.get('/api/search?key=' + this.$route.query.key).then(response => {
+       this.$http.get('/api/work/search?q=' + this.$route.query.key).then(response => {
         if (response.data.status == true) {
           this.items = response.data.userworks;
         } else {

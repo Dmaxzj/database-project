@@ -17,7 +17,7 @@ new Vue({
   router,
   data: function () {
     return {
-      isLogin: true,
+      isLogin: false,
       username: null,
       userId: null
     }

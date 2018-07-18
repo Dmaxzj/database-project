@@ -9,8 +9,7 @@ export default {
   name: 'item',
   props: ["workId"],
   created: function () {
-    this.path = "/src/assets/1.png"
-    // this.path = "api/work/" +  this.workId + "/cover";
+    this.path = "api/work/" +  this.workId + "/cover";
   },
   data () {
     return {

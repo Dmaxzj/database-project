@@ -79,7 +79,7 @@ export default {
           response => {
             if (response.data.status === true) {
               let formData = new FormData();
-              formData.append("file", this.work.image);
+              formData.append("cover", this.work.image);
               this.$http
                 .post("/api/work/" + response.data.work._id + "/cover", formData, {
                   headers: { "Content-Type": "multipart/form-data" }

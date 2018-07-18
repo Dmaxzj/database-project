@@ -25,9 +25,14 @@
       <b-nav-item to="/addWork">
         新建
       </b-nav-item>
-      <b-nav-item to="/userworks" @click="toUserworks">
+      <b-nav-item to="/likes" @click="toUserworks">
         收藏
       </b-nav-item>
+    <b-navbar-nav>
+      <b-nav-item to="article">
+        文章
+      </b-nav-item>
+    </b-navbar-nav>
       <b-nav-item-dropdown>
         <!-- Using button-content slot -->
         <template slot="button-content">
@@ -37,7 +42,7 @@
         <b-dropdown-item @click="signOut">退出</b-dropdown-item>
       </b-nav-item-dropdown>
     </b-navbar-nav>
-      <b-navbar-nav right v-else>
+      <b-navbar-nav right v-if="!getLoginState">
         <b-nav-item to="login">
           登陆
         </b-nav-item>

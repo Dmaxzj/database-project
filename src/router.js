@@ -7,6 +7,7 @@ import Login from './Login.vue'
 import UserInfo from './UserInfo.vue'
 import AddWork from './AddWork.vue'
 import ItemDetials from './ItemDetials.vue'
+import ArticleContainer from './ArticleContainer.vue'
 
 Vue.use(VueRouter);
 
@@ -52,6 +53,10 @@ export default new VueRouter({
                 path: ':id',
                 component: ItemDetials
             }]
+        },
+        {
+            path: '/article',
+            component: ArticleContainer
         },
         {   
             path: '*',

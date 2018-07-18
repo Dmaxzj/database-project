@@ -2,7 +2,6 @@
   <div class="item-detials-container">
     <div class="wrap">
     <header>
-      asdfasdf
       {{workInfo.name}}
      <svg t="1531829082607" @click="onClose" class="close-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1039" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M505.173333 416.426666 122.88 27.306666c-27.306667-27.306667-68.266667-27.306667-102.4 0l0 0c-27.306667 27.306667-27.306667 68.266667 0 102.4L409.6 512l-389.12 389.12c-27.306667 27.306667-27.306667 68.266667 0 102.4l0 0c27.306667 27.306667 68.266667 27.306667 102.4 0l389.12-389.12 389.12 389.12c27.306667 27.306667 68.266667 27.306667 102.4 0l0 0c27.306667-27.306667 27.306667-68.266667 0-102.4L607.573333 512l389.12-389.12c27.306667-27.306667 27.306667-68.266667 0-102.4l0 0c-27.306667-27.306667-68.266667-27.306667-102.4 0L505.173333 416.426666 505.173333 416.426666z" p-id="1040" fill="#707070"></path></svg>
     </header>
@@ -23,21 +22,21 @@
             <b-container id="user-info" v-if="isLogin">
               <b-row>
                 <b-col>
-                  <b-button v-if="privateInfo.isFavorite" @click="changeFavorite" class="like-btn">取消收藏</b-button>
+                  <b-button v-if="privateInfo.like" @click="changeFavorite" class="like-btn">取消收藏</b-button>
                   <b-button v-else @click="changeFavorite">收藏</b-button>
                 </b-col>
               </b-row>
-                <b-row>
+                <b-row v-if="privateInfo.like">
                   <b-col>
                   <b-input-group prepend="评价">
-                      <b-form-select v-model="privateInfo.rank" :options="options"></b-form-select>
+                      <b-form-select v-model="privateInfo.rating" :options="options"></b-form-select>
                     <b-input-group-addon>
                       <b-btn variant="outline-success" @click="changeRank">修改</b-btn>
                     </b-input-group-addon>
                   </b-input-group>
                   </b-col>
                 </b-row>
-                <b-row>
+                <b-row v-if="privateInfo.like">
                   <b-col>
                   <b-input-group prepend="当前看至">
                       <input type="number" class="form-control" id="watch-number" v-model="privateInfo.watched" @input="limiteNumber()">
@@ -89,7 +88,7 @@
           </b-input-group-append>
       </b-input-group>
       <b-input-group id="select-picture">
-        <b-form-file v-model="picture" :state="Boolean(picture)" accept="image/*"></b-form-file>
+        <b-form-file v-model="picture" :state="Boolean(picture)" accept="image/*" name="cover"></b-form-file>
           <b-input-group-append>
             <b-btn variant="outline-success" @click="updateCover">提交</b-btn>
           </b-input-group-append>
@@ -131,7 +130,6 @@
          
         <b-button v-if="state==type.mainPage" :variant="'primary'" @click="state = type.comment">评论</b-button>
         <b-button v-if="state != type.mainPage && state != type.edit" @click="state = type.mainPage">返回</b-button>
-        <!-- <b-button v-if="state==type.mainPage" @click="state = type.userInfo">查看</b-button> -->
         <b-button v-if="state != type.editing" :variant="'primary'" @click="onEditingClick">编辑</b-button>
       </div>
     </div>
@@ -141,12 +139,13 @@
 
 <script>
 import Bus from "./Bus.js";
+import axios from 'axios';
 
 export default {
   name: "item-detials",
   data() {
     return {
-      path: '/src/assets/1.png',
+      path: null,
       state: 3,
       type: {
         editing: 1,
@@ -156,32 +155,13 @@ export default {
       },
       workInfo: {
         description: "",
-        episodes: 12,
-        comments: [
-          {
-            content: 'asdfasdfa'
-          },
-          {
-            content: 'asdfasdfa'
-          },
-          {
-            content: 'asdfadsdasdaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaasdfa'
-          },
-          {
-            content: 'asdfasdfa'
-          },
-          {
-            content: 'asdfasdfa'
-          },
-          {
-            content: 'asdfasdfa'
-          }
-        ]
+        episodes: 0,
+        comments: []
       },
       privateInfo: {
-        isFavorite: true,
-        rank: null,
-        watched: 2
+        like: null,
+        rating: null,
+        watched: 0
       },
       options: [
         { value: null, text: "给此作品评价" },
@@ -223,11 +203,27 @@ export default {
       let id = this.$route.fullPath.split("/");
       id = id[id.length - 1];
       this.workInfo._id = id;
-      // this.path = "api/work/" +  id + "/cover";
-       this.$http.get('/api/work/' + id).then(response => {
+      this.path = "/api/work/" +  id + "/cover";
+      this.$http.get('/api/work/' + id).then(response => {
         if (response.data.status == true) {
           this.workInfo = response.data.work;
-          this.privateInfo = response.data.privateInfo;
+        } else {
+          Bus.$emit('showErr', response.data.errorMessages);
+        }
+      }, error => {
+        Bus.$emit('showErr', error.response.data.errorMessages);
+      })
+
+    if (this.isLogin == false) return;
+      this.$http.get('/api/user/likes').then(response => {
+        if (response.data.status == true) {
+          let likes = response.data.likes;
+          if (!likes) return;
+          likes.forEach(element => {
+            if (element.workId == id) {
+              this.privateInfo = element;
+            }
+          });
         } else {
           Bus.$emit('showErr', response.data.errorMessages);
         }
@@ -253,13 +249,11 @@ export default {
     },
     changeFavorite: function() {
       this.$http
-        .put("/api/work/" + this.workInfo._id +
-        this.privateInfo.isFavorite == true ?
-        "/unlike" : "/like")
+        .post("/api/work/" + this.workInfo._id + (this.privateInfo.like == true ? "/unlike" : "/like"))
         .then(
           response => {
             if (response.data.status == true) {
-              this.privateInfo.isFavorite = !this.privateInfo.isFavorite;
+              this.privateInfo.like = !this.privateInfo.like;
             } else {
               Bus.$emit("showErr", response.data.errorMessages);
             }
@@ -271,13 +265,13 @@ export default {
     },
     changeWatched: function() {
       this.$http
-        .put("/api/changeWatched/?workid=" + this.id, {
+        .post("/api/work/" + this.workInfo._id + "/watched", {
           watched: this.privateInfo.watched
         })
         .then(
           response => {
             if (response.data.status == true) {
-              this.privateInfo.watched = response.data.watched;
+              
             } else {
               Bus.$emit("showErr", response.data.errorMessages);
             }
@@ -289,13 +283,13 @@ export default {
     },
     changeRank: function() {
       this.$http
-        .put("/api/" + this.id, {
-          watched: this.privateInfo.rank
+        .post("/api/work/" + this.workInfo._id + "/rate", {
+          rate: this.privateInfo.rating
         })
         .then(
           response => {
             if (response.data.status == true) {
-              this.privateInfo.rank = response.data.rank;
+
             } else {
               Bus.$emit("showErr", response.data.errorMessages);
             }
@@ -319,7 +313,7 @@ export default {
         .then(
           response => {
             if (response.data.status == true) {
-              this.privateInfo.watched = response.data.watched;
+              this.commentBuffer = '';
             } else {
               Bus.$emit("showErr", response.data.errorMessages);
             }
@@ -338,9 +332,9 @@ export default {
     },
     updateCover: function() {
       let formData = new FormData();
-      formData.append("file", this.picture);
+      formData.append("cover", this.picture);
       this.$http
-        .post("/api/work/" + response.data.work._id + "/cover", formData, {
+        .post("/api/work/" + this.workInfo._id + "/cover", formData, {
           headers: { "Content-Type": "multipart/form-data" }
         })
         .then(
